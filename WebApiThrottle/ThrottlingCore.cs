@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.ServiceModel.Channels;
 using System.Text;
 using System.Threading.Tasks;
@@ -193,7 +194,9 @@ namespace WebApiThrottle
 
             var id = string.Join("_", keyValues);
             var idBytes = Encoding.UTF8.GetBytes(id);
-            var hashBytes = new System.Security.Cryptography.SHA1Managed().ComputeHash(idBytes);
+            var hashBytes = (!(CryptoConfig.AllowOnlyFipsAlgorithms))
+                ? new System.Security.Cryptography.SHA1Managed().ComputeHash(idBytes)
+                : new System.Security.Cryptography.SHA1CryptoServiceProvider().ComputeHash(idBytes);
             var hex = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
             return hex;
         }
